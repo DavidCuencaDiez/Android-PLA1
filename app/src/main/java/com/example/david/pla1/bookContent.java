@@ -24,12 +24,14 @@ public class bookContent {
 
     static {
         // Add some sample items.
+        /*
         for (int i = 1; i <= COUNT; i++) {
             addItem(createBookItem(i));
         }
+        */
     }
 
-    private static void addItem(BookItem item) {
+    public static void addItem(BookItem item) {
         ITEMS.add(item);
         ITEM_MAP.put(item.getId(), item);
     }

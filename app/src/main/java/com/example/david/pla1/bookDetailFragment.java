@@ -1,9 +1,6 @@
 package com.example.david.pla1;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.net.Uri;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -15,10 +12,6 @@ import android.widget.TextView;
 
 import com.example.david.pla1.helper.DownloadImageFromInternet;
 import com.example.david.pla1.model.BookItem;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * A fragment representing a single book detail screen.
