@@ -27,7 +27,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Map;
 
 /**
  * An activity representing a list of books. This activity
@@ -60,54 +64,21 @@ public class bookListActivity extends AppCompatActivity {
         mAuth.signInWithEmailAndPassword(user,password).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
             @Override
             public void onComplete(@NonNull Task<AuthResult> task) {
-                // If sign in fails, display a message to the user. If sign in succeeds
-                // the auth state listener will be notified and logic to handle the
-                // signed in user can be handled in the listener.
-
-                mDatabaseReference = database.getReference("books");
-
-                ValueEventListener bookListener = new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        for (DataSnapshot bookSnapshot: dataSnapshot.getChildren()) {
-                            BookItem book = bookSnapshot.getValue(BookItem.class);
-                            bookContent.addItem(book);
-                        }
-                        View recyclerView = findViewById(R.id.book_list);
-                        assert recyclerView != null;
-                        setupRecyclerView((RecyclerView) recyclerView);
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-
-                        Log.w(null, "loadPost:onCancelled", databaseError.toException());
-
-                    }
-                };
-
-
-                mDatabaseReference.addValueEventListener(bookListener);
-
                 if (!task.isSuccessful()) {
                     Toast.makeText(bookListActivity.this, "Cannot Login",
                             Toast.LENGTH_SHORT).show();
                 }else{
-
-
-
+                    GetBookData();
                 }
-
-                // ...
             }
         });
 
 
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         toolbar.setTitle(getTitle());
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -125,6 +96,57 @@ public class bookListActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    private void GetBookData(){
+        mDatabaseReference = database.getReference("books");
+
+        ValueEventListener bookListener = new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                bookContent.ITEMS.clear();
+                for (DataSnapshot bookSnapshot: dataSnapshot.getChildren()) {
+
+                    BookItem book = ParseValues(bookSnapshot);
+
+                    bookContent.addItem(book);
+                }
+
+                View recyclerView = findViewById(R.id.book_list);
+                assert recyclerView != null;
+                setupRecyclerView((RecyclerView) recyclerView);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+                Log.w(null, "loadPost:onCancelled", databaseError.toException());
+
+            }
+        };
+
+        mDatabaseReference.addValueEventListener(bookListener);
+    }
+
+    private BookItem ParseValues(DataSnapshot bookSnapshot){
+
+        Map<String, Object> map = (Map<String, Object>) bookSnapshot.getValue();
+        int id = Integer.parseInt(bookSnapshot.getKey()) ;
+        String author = (String)map.get("author");
+        String description=(String)map.get("description");
+        String [] date = ((String)map.get("publication_date")).split("/");
+
+        Calendar cal = Calendar.getInstance();
+        cal.set(Calendar.YEAR, Integer.parseInt(date[2]));
+        cal.set(Calendar.MONTH, Integer.parseInt(date[1])-1);
+        cal.set(Calendar.DAY_OF_MONTH, Integer.parseInt(date[0]));
+
+        Date publication_date = cal.getTime();
+        String title=(String)map.get("title");
+        String url_image=(String)map.get("url_image");
+
+        BookItem book = new BookItem(id,author,description,publication_date,title,url_image);
+        return book;
     }
 
     private void setupRecyclerView(@NonNull RecyclerView recyclerView) {
